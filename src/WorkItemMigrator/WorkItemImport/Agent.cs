@@ -505,7 +505,6 @@ namespace WorkItemImport
                     {
                         var newAttachment = new Attachment(att.FilePath, att.Comment);
                         wi.Attachments.Add(newAttachment);
-
                         attachmentMap.Add(att.AttOriginId, newAttachment);
                     }
                     else if (att.Change == ReferenceChangeType.Removed)
@@ -543,6 +542,7 @@ namespace WorkItemImport
         {
             if (_context.Journal.IsAttachmentMigrated(att.AttOriginId, out int attWiId))
                 return wi.Attachments.Cast<Attachment>().SingleOrDefault(a => a.Id == attWiId);
+
             return null;
         }
 
@@ -862,11 +862,18 @@ namespace WorkItemImport
                     if (tfsAtt != null)
                     {
                         string imageSrcPattern = $"src.*?=.*?\"([^\"])(?=.*{att.AttOriginId}).*?\"";
+                        if (!Regex.IsMatch(textField, imageSrcPattern))
+                        {
+                            if (!Regex.IsMatch(textField, "https://dev.azure.com/"))
+                            {
+                                Logger.Log(LogLevel.Error, $"Could not match image url in {textField}");
+                            }
+                        }
                         textField = Regex.Replace(textField, imageSrcPattern, $"src=\"{tfsAtt.Uri.AbsoluteUri}\"");
                         isUpdated = true;
                     }
                     else
-                        Logger.Log(LogLevel.Warning, $"Attachment '{att.ToString()}' referenced in text but is missing from work item {wiItem.OriginId}/{wi.Id}.");
+                        Logger.Log(LogLevel.Warning, $"Attachment '{att.ToString()}' referenced in text but is realy missing from work item {wiItem.OriginId}/{wi.Id}.");
                 }
             }
             if (isUpdated)
