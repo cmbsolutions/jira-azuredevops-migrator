@@ -33,7 +33,7 @@ namespace JiraExport
 
         public List<RevisionAction<JiraAttachment>> AttachmentActions { get; set; }
         public JiraItem ParentItem { get; private set; }
-        public int Index { get; internal set; }
+        public int Index { get; set; }
 
         public string OriginId => ParentItem.Key;
 
@@ -47,6 +47,9 @@ namespace JiraExport
 
         public int CompareTo(JiraRevision other)
         {
+            if (other == null)
+                return 1;
+
             int t = this.Time.CompareTo(other.Time);
             if (t != 0)
                 return t;
